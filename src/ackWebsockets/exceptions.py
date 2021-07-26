@@ -1,0 +1,2 @@
+class IncorrectSocketMessage(Exception):
+    pass

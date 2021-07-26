@@ -1,0 +1,35 @@
+version: '3.7'
+
+services:
+  ucloud-socket:
+    container_name: ucloud-socket
+    build:
+      context: $UCLOUD_SOCKET_PROJECT_PATH
+
+    command: ucloud-socket --test-mode --port=80
+
+  dummy-octoprint:
+    container_name: dummy-octoprint
+    tty: true
+    build:
+      context: $DUMMY_OCTOPRINT_PROJECT_PATH
+
+  ucloud-thing:
+    container_name: ucloud-thing
+    tty: true
+    build:
+      context: .
+
+    environment:
+      - LOG_LEVEL=INFO
+      - UCLOUD_ID=ucloud1
+      - OCTOPRINT_URL=http://dummy-octoprint
+      - OCTOPRINT_CONFIG_PATH=config.yaml
+      - FILE_UPLOAD_PATH=/tmp
+      - SOCKET_URL=ws://ucloud-socket
+      - BACKEND_URL=http://ucloud-backend
+
+    depends_on:
+      - dummy-octoprint
+      - ucloud-socket
+

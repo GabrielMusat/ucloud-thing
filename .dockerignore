@@ -1,0 +1,6 @@
+/venv
+Dockerfile
+update.sh
+/.idea
+config.yml
+.env
