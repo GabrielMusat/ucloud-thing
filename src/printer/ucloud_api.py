@@ -43,25 +43,25 @@ class UcloudApi:
     async def connect(self, loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()) -> None:
         while True:
             try:
-                conn = await websockets.connect(self.url_socket, extra_headers={"ucloud-id": self.ucloud_id})
-                self.socket = ackWebsockets.Socket(conn)
-                await self.on_connect()
+                async with websockets.connect(self.url_socket, extra_headers={"ucloud-id": self.ucloud_id}) as ws:
+                    self.socket = ackWebsockets.Socket(ws)
+                    await self.on_connect()
 
-                async def on_disconnect():
-                    await self.on_disconnect()
-                    await self.reconnect()
-                self.socket.onDisconnect(on_disconnect)
+                    async def on_disconnect():
+                        await self.on_disconnect()
+                        await self.reconnect()
+                    self.socket.onDisconnect(on_disconnect)
 
-                async def on_error(ex: Exception):
-                    await self.on_error(ex)
-                    await self.reconnect()
-                self.socket.onError(on_error)
-                self.socket.on(INIT, self.on_init)
-                self.socket.on(GREEN_LIGHT, self.on_green_light)
-                self.socket.on(RED_LIGHT, self.on_red_light)
-                self.socket.on_sync(INSTRUCTION, self.on_instruction)
-                loop.create_task(self.socket.run())
-                break
+                    async def on_error(ex: Exception):
+                        await self.on_error(ex)
+                        await self.reconnect()
+                    self.socket.onError(on_error)
+                    self.socket.on(INIT, self.on_init)
+                    self.socket.on(GREEN_LIGHT, self.on_green_light)
+                    self.socket.on(RED_LIGHT, self.on_red_light)
+                    self.socket.on_sync(INSTRUCTION, self.on_instruction)
+                    loop.create_task(self.socket.run())
+                    break
 
             except Exception as e:  # todo: catch concrete exceptions
                 await self.on_error(e)
