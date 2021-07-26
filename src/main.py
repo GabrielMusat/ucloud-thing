@@ -24,7 +24,7 @@ class Args(PyArgs):
             raise ValueError("ucloud_id or ucloud_id_path must be provided")
         if self.ucloud_id_path:
             with open(self.ucloud_id_path) as f:
-                self.ucloud_id = f.read()
+                self.ucloud_id = f.read().strip()
 
 
 async def main(loop: asyncio.AbstractEventLoop):
