@@ -2,5 +2,5 @@ ucloud_id_path: /boot/ucloud-id.txt
 octoprint_url: http://localhost/api
 octoprint_config_path: /home/pi/.octoprint/config.yaml
 file_upload_path: /home/pi/.octoprint/uploads
-socket_url: wss://web.ucloud3d.com/ws
-backend_url: https://web.ucloud3d.com/api
+socket_url: ws://192.168.0.20:5001
+backend_url: http://192.168.0.20:5000
