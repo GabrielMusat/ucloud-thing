@@ -40,7 +40,7 @@ class UcloudApi:
         await asyncio.sleep(10)
         await self.connect()
 
-    async def connect(self, loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()) -> None:
+    async def connect(self) -> None:
         while True:
             try:
                 async with websockets.connect(self.url_socket, extra_headers={"ucloud-id": self.ucloud_id}) as ws:
@@ -60,8 +60,7 @@ class UcloudApi:
                     self.socket.on(GREEN_LIGHT, self.on_green_light)
                     self.socket.on(RED_LIGHT, self.on_red_light)
                     self.socket.on_sync(INSTRUCTION, self.on_instruction)
-                    loop.create_task(self.socket.run())
-                    break
+                    await self.socket.run()
 
             except Exception as e:  # todo: catch concrete exceptions
                 await self.on_error(e)

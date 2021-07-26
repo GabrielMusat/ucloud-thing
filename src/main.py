@@ -34,7 +34,7 @@ async def main(loop: asyncio.AbstractEventLoop):
     octoapi = OctoApi(args.octoprint_url, args.octoprint_config_path)
     ulabapi = UcloudApi(args.socket_url, args.backend_url, args.ucloud_id)
     printer = Printer(octoapi, ulabapi, args.file_upload_path, args.ping_timeout)
-    await printer.ucloud_api.connect(loop)
+    loop.create_task(printer.ucloud_api.connect())
     await printer.loop()
 
 if __name__ == '__main__':
