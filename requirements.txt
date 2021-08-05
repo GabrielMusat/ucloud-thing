@@ -4,7 +4,5 @@ aiofiles==0.7.0
 websockets==9.1
 coloredlogs==15.0.1
 dbus-python==1.2.16
-gattlib==0.20201113
-pybluez==0.23
 pyargparse==0.1.8
 vext.gi==0.7.4
