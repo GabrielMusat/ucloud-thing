@@ -1,10 +1,12 @@
 import asyncio
 import typing as T
 from log.logger import _get as init_logger
+import threading
 
 from pyargparse import PyArgs
 
 from printer import Printer, UcloudApi, OctoApi
+import ucloud_bluetooth
 
 
 class Args(PyArgs):
@@ -17,6 +19,7 @@ class Args(PyArgs):
     backend_url: str
     ping_timeout: int = 10
     log_level: str = "INFO"
+    bluetooth: bool = True
 
     def __init__(self):
         super(Args, self).__init__("config.production.yml")
@@ -29,6 +32,8 @@ class Args(PyArgs):
 
 async def main(loop: asyncio.AbstractEventLoop):
     args = Args()
+    if args.bluetooth:
+        threading.Thread(target=ucloud_bluetooth.main).start()
     init_logger(args.log_level)
     print(args)
     octoapi = OctoApi(args.octoprint_url, args.octoprint_config_path)

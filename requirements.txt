@@ -7,3 +7,4 @@ dbus-python==1.2.16
 gattlib==0.20201113
 pybluez==0.23
 pyargparse==0.1.8
+vext.gi==0.7.4
