@@ -7,6 +7,8 @@ from .wifi_file import WifiEntry, WifiFile
 import log
 import json
 
+SECS_BEFORE_REBOOT = 3
+
 
 class UcloudService(Service):
     UUID = '12345678-1234-5678-1234-56789abcdef0'
@@ -59,4 +61,4 @@ class WifiCharacteristic(Characteristic):
             new_value.append(WifiEntry(d["ssid"], d["psk"]))
 
         self.wifi_file.update_wifi(new_value)
-        os.system("reboot")
+        os.system(f"(sleep {5} && reboot) &")
