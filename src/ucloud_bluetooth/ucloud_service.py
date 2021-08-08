@@ -1,5 +1,6 @@
 import dbus
 
+import os
 from .dbus_objects import Characteristic, Service
 import typing as T
 from .wifi_file import WifiEntry, WifiFile
@@ -58,3 +59,4 @@ class WifiCharacteristic(Characteristic):
             new_value.append(WifiEntry(d["ssid"], d["psk"]))
 
         self.wifi_file.update_wifi(new_value)
+        os.system("reboot")
