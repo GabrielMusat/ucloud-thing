@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -e
 
 echo "updating..."
 
@@ -13,10 +12,8 @@ if [[ -f /boot/ucloud-thing-branch.txt ]]; then
 fi
 
 git reset --hard
+git pull origin "$BRANCH"
 git checkout -f "$BRANCH"
-git pull
-
-apt install libbluetooth-dev libglib2.0-dev libboost-python-dev libboost-thread-dev -y
 
 source venv/bin/activate
 pip install -r requirements.txt
