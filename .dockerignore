@@ -4,3 +4,4 @@ update.sh
 /.idea
 config.yml
 .env
+ucloud.img
