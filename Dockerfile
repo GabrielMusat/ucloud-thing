@@ -4,8 +4,8 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install vext
-RUN apt update && apt install build-essential libdbus-glib-1-dev libgirepository1.0-dev -y
+RUN apt update && apt install build-essential libdbus-glib-1-dev libgirepository1.0-dev python3-gi -y
+RUN pip install vext pygobject
 RUN pip install -r requirements.txt
 
 COPY src .

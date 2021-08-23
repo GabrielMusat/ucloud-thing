@@ -5,4 +5,5 @@ websockets==9.1
 coloredlogs==15.0.1
 dbus-python==1.2.16
 pyargparse==0.1.8
+vext==0.7.4
 vext.gi==0.7.4
