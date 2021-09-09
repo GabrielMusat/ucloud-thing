@@ -54,6 +54,7 @@ class Printer(PrinterReceiver):
         if 'token' not in data:
             return SocketMessageResponse(1, "token not specified")
         token = data["token"]
+        user_id = data["user"] if "user" in data else ""
 
         if self.actualState['download']['file'] is not None:
             return SocketMessageResponse(
@@ -70,9 +71,9 @@ class Printer(PrinterReceiver):
 
         init = data['init'] if 'init' in data else None
 
-        if not os.path.isfile(gcode):
+        if not os.path.isfile(gcode) or user_id:
             log.info("file " + gcode + " not found, downloading it...")
-            r = await self.ucloud_api.download(data['file'], token)
+            r = await self.ucloud_api.download((f"{user_id}/" if user_id else "")+data['file'], token)
             if r.status != 200:
                 log.warning("error downloading file " + data['file'] + " from url: " + str(r.status))
                 return SocketMessageResponse(1, "file does not exists")
