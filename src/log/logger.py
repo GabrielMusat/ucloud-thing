@@ -8,8 +8,9 @@ log = None
 def _get(level: str = "INFO") -> logging.Logger:
     global log
     if not log:
-        log = logging.getLogger("main")
-        coloredlogs.install(level=level, logger=log)
+        log = logging.getLogger()
+        log.setLevel(logging.__dict__[level.upper()])
+        coloredlogs.install(logger=log)
         log.propagate = False
 
     return log

@@ -11,7 +11,11 @@ from . import ucloud_service
 
 def main():
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-    bus = dbus.SystemBus()
+    try:
+        bus = dbus.SystemBus()
+    except dbus.exceptions.DBusException as e:
+        log.error(f"could not start dbus: {e}")
+        return
 
     mainloop = GLib.MainLoop()
 
