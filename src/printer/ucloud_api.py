@@ -30,10 +30,14 @@ class UcloudApi:
         self.on_error: T.Callable[[Exception], T.Awaitable[None]] = dummy
         self.on_instruction: T.Callable[[str], T.Awaitable[ackWebsockets.SocketMessageResponse]] = dummy
 
+    async def exists(self, file: str, token: str) -> bool:
+        url = self.url_backend + '/files/' + file
+        r: aiohttp.ClientResponse = await self.session.head(url, headers={"authorization": token})
+        return r.status == 200
+
     async def download(self, file: str, token: str) -> aiohttp.ClientResponse:
         url = self.url_backend + '/files/' + file
-        r = await self.session.get(url, headers={"authorization": token})
-        return r
+        return await self.session.get(url, headers={"authorization": token})
 
     async def reconnect(self):
         self.socket = None

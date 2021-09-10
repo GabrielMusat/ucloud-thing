@@ -1,10 +1,10 @@
 import asyncio
 import json
+import time
 import os
 from typing import Dict, Union
 
 import aiofiles
-import aiohttp
 
 import log
 from ackWebsockets import SocketMessageResponse
@@ -31,17 +31,19 @@ class Printer(PrinterReceiver):
                 await self.octo_api.post_command(pre_cmd)
         await self.octo_api.print(gcode.split('/')[-1])
 
-    async def _download_file(self, r: aiohttp.ClientResponse, gcode: str) -> None:
+    async def _download_file(self, file: str, token: str, gcode: str) -> None:
+        r = await self.ucloud_api.download(file, token)
         f = await aiofiles.open(gcode, mode='wb')
+        chunk_size = 1024
         read = 0
         while True:
             if r.content_length:
                 self.actualState["download"]["completion"] = read / r.content_length
-            chunk = await r.content.read(1024)
+            chunk = await r.content.read(chunk_size)
             if not chunk:
                 break
             await f.write(chunk)
-            read += 1024
+            read += chunk_size
         log.info("file " + gcode + ' downloaded successfully, printing it...')
         self.actualState["download"]["file"] = None
         self.actualState["download"]["completion"] = -1
@@ -57,37 +59,41 @@ class Printer(PrinterReceiver):
         user_id = data["user"] if "user" in data else ""
 
         if self.actualState['download']['file'] is not None:
-            return SocketMessageResponse(
-                1,
-                "file "+self.actualState['download']['file']+" has already been scheduled to download and print"
-            )
+            msg = "file "+self.actualState['download']['file']+" has already been scheduled to download and print"
+            return SocketMessageResponse(1, msg)
 
         if not self.actualState["status"]["state"]['text'] == 'Operational':
             return SocketMessageResponse(1, "ucloud is not in an operational state")
 
         if not os.path.isdir(self.upload_path):
             os.mkdir(self.upload_path)
-        gcode = self.upload_path + '/' + (data['file'] if data['file'].endswith('.gcode') else data['file'] + '.gcode')
+        upload_path = f"{self.upload_path}/{data['file']}"
+        if not upload_path.endswith(".gcode"):
+            upload_path += ".gcode"
+        download_path = f"{user_id}/{data['file']}" if user_id else data['file']
 
-        init = data['init'] if 'init' in data else None
+        init = data['init'] if 'init' in data and data['init'] else None
 
-        if not os.path.isfile(gcode) or user_id:
-            log.info("file " + gcode + " not found, downloading it...")
-            r = await self.ucloud_api.download((f"{user_id}/" if user_id else "")+data['file'], token)
-            if r.status != 200:
-                log.warning("error downloading file " + data['file'] + " from url: " + str(r.status))
-                return SocketMessageResponse(1, "file does not exists")
+        if not os.path.isfile(upload_path) or user_id:
+            log.info("downloading file from " + download_path + " to " + upload_path+"...")
+            exists = await self.ucloud_api.exists(download_path, token)
+
+            if not exists:
+                log.warning("path " + download_path + " does not exist on server")
+                return SocketMessageResponse(1, "file does not exist")
 
             async def download_and_print():
                 self.actualState["download"]["file"] = data['file']
                 self.actualState["download"]["completion"] = 0.0
-                await self._download_file(r, gcode)
-                await self._print_file(gcode, init)
+                start = time.time()
+                await self._download_file(download_path, token, upload_path)
+                log.info(f"file {download_path} downloaded in {round(time.time() - start, 2)}s")
+                await self._print_file(upload_path, init)
 
             asyncio.get_running_loop().create_task(download_and_print())
             return SocketMessageResponse(0, "file was not on ucloud, downloading it and printing it...")
 
-        await self._print_file(gcode, init)
+        await self._print_file(upload_path, init)
         return SocketMessageResponse(0, "ok")
 
     async def cancel(self) -> SocketMessageResponse:
