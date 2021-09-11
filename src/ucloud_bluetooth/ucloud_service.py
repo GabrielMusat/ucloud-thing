@@ -54,7 +54,7 @@ class RebootCharacteristic(Characteristic):
         decoded = dbus_bytes_2_str(value)
         if decoded == "reboot":
             log.info("rebooting system...")
-            os.system(f"reboot")
+            os.system(f"(sleep {2} && reboot) &")
         else:
             log.warning(f"received non reboot command: {decoded}")
 
