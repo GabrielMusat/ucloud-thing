@@ -7,13 +7,18 @@ from .wifi_file import WifiEntry, WifiFile
 import log
 import json
 
-SECS_BEFORE_REBOOT = 3
-
 
 class UcloudService(Service):
-    UUID = '12345678-1234-5678-1234-56789abcdef0'
+    UUID_SUFFIX = '12345678'
 
-    def __init__(self, bus, index):
+    def __init__(self, ucloud_id: str, bus, index):
+        if len(ucloud_id) != 24:
+            raise ValueError("ucloud_id length must be 24")
+        self.UUID = f"{ucloud_id[0:8]}-" \
+                    f"{ucloud_id[8:12]}-" \
+                    f"{ucloud_id[12:16]}-" \
+                    f"{ucloud_id[16:20]}-" \
+                    f"{ucloud_id[20:24]}{self.UUID_SUFFIX}"
         super().__init__(
             bus,
             index,
@@ -21,6 +26,29 @@ class UcloudService(Service):
             True
         )
         self.add_characteristic(WifiCharacteristic(bus, 0, self))
+
+
+class RebootCharacteristic(Characteristic):
+    UUID = '12345678-1234-5678-1234-56789abcdef6'
+
+    def __init__(self, bus, index, service):
+        super().__init__(
+            bus,
+            index,
+            self.UUID,
+            ['write', 'writable-auxiliaries'],
+            service
+        )
+        self.wifi_file = WifiFile()
+
+    def WriteValue(self, value, options):
+        log.info('RebootCharacteristic Write: ' + self.dbus_bytes_2_str(value))
+        decoded = self.dbus_bytes_2_str(value)
+        if decoded == "reboot":
+            log.info("rebooting system...")
+            os.system(f"reboot")
+        else:
+            log.warning(f"received non reboot command: {decoded}")
 
 
 class WifiCharacteristic(Characteristic):
@@ -61,4 +89,3 @@ class WifiCharacteristic(Characteristic):
             new_value.append(WifiEntry(d["ssid"], d["psk"]))
 
         self.wifi_file.update_wifi(new_value)
-        os.system(f"(sleep {5} && reboot) &")

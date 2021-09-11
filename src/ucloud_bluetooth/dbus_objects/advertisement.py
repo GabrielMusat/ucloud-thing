@@ -61,12 +61,10 @@ class Advertisement(dbus.service.Object):
 
     @dbus.service.method(DBUS_PROP_IFACE, in_signature='s', out_signature='a{sv}')
     def GetAll(self, interface):
-        print('GetAll')
         if interface != LE_ADVERTISEMENT_IFACE:
             raise InvalidArgsException()
-        print('returning props')
         return self.get_properties()[LE_ADVERTISEMENT_IFACE]
 
     @dbus.service.method(LE_ADVERTISEMENT_IFACE, in_signature='', out_signature='')
     def Release(self):
-        print('%s: Released!' % self.path)
+        pass

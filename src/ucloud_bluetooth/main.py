@@ -9,7 +9,7 @@ import log
 from . import ucloud_service
 
 
-def main():
+def main(ucloud_id: str):
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     try:
         bus = dbus.SystemBus()
@@ -21,11 +21,8 @@ def main():
 
     BluetoothServer(
         bus,
-        [ucloud_service.UcloudService(bus, 0)],
+        [ucloud_service.UcloudService(ucloud_id, bus, 0)],
     )
     log.info("running Glib mainloop for GATT server...")
     mainloop.run()
 
-
-if __name__ == '__main__':
-    main()
