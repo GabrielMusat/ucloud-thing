@@ -37,10 +37,9 @@ class RebootCharacteristic(Characteristic):
             bus,
             index,
             self.UUID,
-            ['write', 'writable-auxiliaries'],
+            ['read', 'write', 'writable-auxiliaries'],
             service
         )
-        self.wifi_file = WifiFile()
 
     def WriteValue(self, value, options):
         log.info('RebootCharacteristic Write: ' + self.dbus_bytes_2_str(value))
