@@ -25,8 +25,8 @@ class UcloudService(Service):
             self.UUID,
             True
         )
-        self.add_characteristic(WifiCharacteristic(bus, 0, self))
-        self.add_characteristic(RebootCharacteristic(bus, 1, self))
+        self.add_characteristic(RebootCharacteristic(bus, 0, self))
+        self.add_characteristic(WifiCharacteristic(bus, 1, self))
 
 
 class RebootCharacteristic(Characteristic):
