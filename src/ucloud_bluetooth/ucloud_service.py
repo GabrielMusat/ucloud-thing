@@ -8,6 +8,14 @@ import log
 import json
 
 
+def str_2_dbus_bytes(string: str) -> T.List[dbus.Byte]:
+    return [dbus.Byte(ord(c)) for c in string]
+
+
+def dbus_bytes_2_str(dbus_bytes: T.List[dbus.Byte]) -> str:
+    return "".join([chr(c) for c in dbus_bytes])
+
+
 class UcloudService(Service):
     UUID_SUFFIX = '12345678'
 
@@ -42,8 +50,8 @@ class RebootCharacteristic(Characteristic):
         )
 
     def WriteValue(self, value, options):
-        log.info('RebootCharacteristic Write: ' + self.dbus_bytes_2_str(value))
-        decoded = self.dbus_bytes_2_str(value)
+        log.info('RebootCharacteristic Write: ' + dbus_bytes_2_str(value))
+        decoded = dbus_bytes_2_str(value)
         if decoded == "reboot":
             log.info("rebooting system...")
             os.system(f"reboot")
@@ -64,22 +72,14 @@ class WifiCharacteristic(Characteristic):
         )
         self.wifi_file = WifiFile()
 
-    @staticmethod
-    def str_2_dbus_bytes(string: str) -> T.List[dbus.Byte]:
-        return [dbus.Byte(ord(c)) for c in string]
-
-    @staticmethod
-    def dbus_bytes_2_str(dbus_bytes: T.List[dbus.Byte]) -> str:
-        return "".join([chr(c) for c in dbus_bytes])
-
     def ReadValue(self, options):
         to_return = [x.__dict__() for x in self.wifi_file.parse()]
         log.info(f'WifiCharacteristic Read: {to_return}')
-        return self.str_2_dbus_bytes(json.dumps(to_return))
+        return str_2_dbus_bytes(json.dumps(to_return))
 
     def WriteValue(self, value, options):
-        log.info('WifiCharacteristic Write: ' + self.dbus_bytes_2_str(value))
-        decoded = json.loads(self.dbus_bytes_2_str(value))
+        log.info('WifiCharacteristic Write: ' + dbus_bytes_2_str(value))
+        decoded = json.loads(dbus_bytes_2_str(value))
         assert type(decoded) == list, log.warning("received new value is not list")
         new_value = []
         for i, d in enumerate(decoded):
