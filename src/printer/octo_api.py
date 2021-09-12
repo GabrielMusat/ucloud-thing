@@ -48,6 +48,22 @@ class OctoApi:
         if not r.status == 204:
             raise HttpException(r.status)
 
+    async def pause(self) -> None:
+        r = await self.session.post(
+            url=self.url+'/job',
+            data=json.dumps({"command": "pause", "action": "pause"})
+        )
+        if not r.status == 204:
+            raise HttpException(r.status)
+
+    async def resume(self) -> None:
+        r = await self.session.post(
+            url=self.url+'/job',
+            data=json.dumps({"command": "pause", "action": "resume"})
+        )
+        if not r.status == 204:
+            raise HttpException(r.status)
+
     async def cancel(self) -> None:
         r = await self.session.post(self.url+'/job', data=json.dumps({"command": "cancel"}))
         if not r.status == 204:

@@ -105,6 +105,22 @@ class Printer(PrinterReceiver):
         await self.octo_api.post_command("G1 Z140")
         return SocketMessageResponse(0, "ok")
 
+    async def pause(self) -> SocketMessageResponse:
+        log.info("pausing print...")
+        if not self.actualState["status"]["state"]['flags']['printing']:
+            return SocketMessageResponse(1, "ucloud is not in an printing state")
+
+        await self.octo_api.pause()
+        return SocketMessageResponse(0, "ok")
+
+    async def resume(self) -> SocketMessageResponse:
+        log.info("resuming print...")
+        if not self.actualState["status"]["state"]['flags']['paused']:
+            return SocketMessageResponse(1, "ucloud is not in an paused state")
+
+        await self.octo_api.resume()
+        return SocketMessageResponse(0, "ok")
+
     async def settings(self, data: Dict[str, str]) -> SocketMessageResponse:
         log.info("changing settings...")
         keys = [x for x in data if x not in ['instruction']]
@@ -182,7 +198,7 @@ class Printer(PrinterReceiver):
 
         instruction = data['instruction']
         log.info("instruction " + instruction + " detected")
-        if instruction in ["home", "print", "command", "load", "unload", "move"]:
+        if instruction in ["home", "print", "command", "load", "unload", "move", "pause", "resume"]:
             error_flag = False
             try:
                 if self.actualState["status"]["state"]['text'] != 'Operational':
@@ -204,6 +220,12 @@ class Printer(PrinterReceiver):
 
             elif instruction == 'cancel':
                 return await self.cancel()
+
+            elif instruction == 'pause':
+                return await self.pause()
+
+            elif instruction == 'resume':
+                return await self.resume()
 
             elif instruction == 'settings':
                 return await self.settings(data)
