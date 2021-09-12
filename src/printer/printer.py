@@ -198,7 +198,7 @@ class Printer(PrinterReceiver):
 
         instruction = data['instruction']
         log.info("instruction " + instruction + " detected")
-        if instruction in ["home", "print", "command", "load", "unload", "move", "pause", "resume"]:
+        if instruction in ["home", "print", "command", "load", "unload", "move"]:
             error_flag = False
             try:
                 if self.actualState["status"]["state"]['text'] != 'Operational':
