@@ -32,12 +32,15 @@ class Printer(PrinterReceiver):
         await self.octo_api.print(gcode.split('/')[-1])
 
     async def _download_file(self, file: str, token: str, gcode: str) -> None:
+        self.actualState["download"]["file"] = file
+        self.actualState["download"]["completion"] = 0.0
         r = await self.ucloud_api.download(file, token)
         f = await aiofiles.open(gcode, mode='wb')
         chunk_size = 1024
         read = 0
         while True:
             if r.content_length:
+                self.actualState["download"]["file"] = file
                 self.actualState["download"]["completion"] = read / r.content_length
             chunk = await r.content.read(chunk_size)
             if not chunk:
@@ -83,8 +86,6 @@ class Printer(PrinterReceiver):
                 return SocketMessageResponse(1, "file does not exist")
 
             async def download_and_print():
-                self.actualState["download"]["file"] = data['file']
-                self.actualState["download"]["completion"] = 0.0
                 start = time.time()
                 await self._download_file(download_path, token, upload_path)
                 log.info(f"file {download_path} downloaded in {round(time.time() - start, 2)}s")
