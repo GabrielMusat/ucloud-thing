@@ -40,6 +40,14 @@ class OctoApi:
         if not r.status == 204:
             raise HttpException(r.status)
 
+    async def post_script(self, script: str) -> None:
+        r = await self.session.post(
+            url=self.url + '/printer/command',
+            data=json.dumps({"script": script})
+        )
+        if not r.status == 204:
+            raise HttpException(r.status)
+
     async def print(self, file: str) -> None:
         r = await self.session.post(
             url=self.url+'/files/local/'+file,

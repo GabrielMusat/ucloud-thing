@@ -15,6 +15,7 @@ class Args(PyArgs):
     octoprint_url: str
     octoprint_config_path: str
     file_upload_path: str
+    scripts_path: str
     socket_url: str
     backend_url: str
     ping_timeout: int = 10
@@ -38,7 +39,7 @@ async def main(loop: asyncio.AbstractEventLoop):
     print(args)
     octoapi = OctoApi(args.octoprint_url, args.octoprint_config_path)
     ulabapi = UcloudApi(args.socket_url, args.backend_url, args.ucloud_id)
-    printer = Printer(octoapi, ulabapi, args.file_upload_path, args.ping_timeout)
+    printer = Printer(octoapi, ulabapi, args.file_upload_path, args.scripts_path, args.ping_timeout)
     await printer.ucloud_api.connect(loop)
     await printer.loop()
 

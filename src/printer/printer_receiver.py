@@ -19,12 +19,14 @@ class PrinterReceiver(ABC):
                  octo_api: OctoApi,
                  ucloud_api: UcloudApi,
                  upload_path: str,
+                 scripts_path: str,
                  retry_timeout: int = 20,
                  ping_timeout: int = 10
                  ):
         self.sentState: Dict[str, Any] = {}
         self.actualState: Dict[str, Any] = {}
         self.upload_path = upload_path
+        self.scripts_path = scripts_path
         self.ping_timeout = ping_timeout
         self.retry_timeout = retry_timeout
         self.connected = False

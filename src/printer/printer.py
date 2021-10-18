@@ -13,6 +13,50 @@ from .printer_receiver import PrinterReceiver
 
 
 WPA_SUPPLICANT = "/boot/octopi-wpa-supplicant.txt"
+AFTER_PAUSE_SCRIPT = '''
+{% if pause_position.x is not none %}
+; relative XYZE
+G91
+M83
+
+; retract filament, move Z slightly upwards
+G1 Z+5 E-5 F4500
+
+; absolute XYZE
+M82
+G90
+
+; move to a safe rest position, adjust as necessary
+G1 X0 Y0
+{% endif %}
+'''
+
+BEFORE_RESUME_SCRIPT = '''
+{% if pause_position.x is not none %}
+; relative extruder
+M83
+
+; prime nozzle
+G1 E-5 F4500
+G1 E5 F4500
+G1 E5 F4500
+
+; absolute E
+M82
+
+; absolute XYZ
+G90
+
+; reset E
+G92 E{{ pause_position.e }}
+
+; move back to pause position XYZ
+G1 X{{ pause_position.x }} Y{{ pause_position.y }} Z{{ pause_position.z }} F4500
+
+; reset to feed rate before pause if available
+{% if pause_position.f is not none %}G1 F{{ pause_position.f }}{% endif %}
+{% endif %}
+'''
 
 
 class Printer(PrinterReceiver):
@@ -113,25 +157,30 @@ class Printer(PrinterReceiver):
         return SocketMessageResponse(0, "ok")
 
     async def pause(self, data) -> SocketMessageResponse:
-        default = 'G91; G1 Z+20 F1000; G90; G1 X0 Y0'
-        after_pause = default if "after" not in data else data["after"]
+        after_pause = AFTER_PAUSE_SCRIPT if "after" not in data else data["after"]
         log.info("pausing print...")
         if not self.actualState["status"]["state"]['flags']['printing']:
             return SocketMessageResponse(1, "ucloud is not in an printing state")
 
+        if not os.path.isdir(self.scripts_path):
+            os.makedirs(self.scripts_path, exist_ok=True)
+        script_path = os.path.join(self.scripts_path, "afterPrintPaused")
+        with open(script_path, "w") as f:
+            f.write(after_pause)
         await self.octo_api.pause()
-        if after_pause:
-            log.info("executing after pause...")
-            for cmd in after_pause.split(";"):
-                log.info(cmd)
-                await self.octo_api.post_command(cmd)
         return SocketMessageResponse(0, "ok")
 
-    async def resume(self) -> SocketMessageResponse:
+    async def resume(self, data) -> SocketMessageResponse:
+        before_resume = BEFORE_RESUME_SCRIPT if "before" not in data else data["before"]
         log.info("resuming print...")
         if not self.actualState["status"]["state"]['flags']['paused']:
             return SocketMessageResponse(1, "ucloud is not in an paused state")
 
+        if not os.path.isdir(self.scripts_path):
+            os.makedirs(self.scripts_path, exist_ok=True)
+        script_path = os.path.join(self.scripts_path, "beforePrintResumed")
+        with open(script_path, "w") as f:
+            f.write(before_resume)
         await self.octo_api.resume()
         return SocketMessageResponse(0, "ok")
 
@@ -239,7 +288,7 @@ class Printer(PrinterReceiver):
                 return await self.pause(data)
 
             elif instruction == 'resume':
-                return await self.resume()
+                return await self.resume(data)
 
             elif instruction == 'settings':
                 return await self.settings(data)
