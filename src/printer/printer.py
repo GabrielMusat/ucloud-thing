@@ -97,21 +97,34 @@ class Printer(PrinterReceiver):
         await self._print_file(upload_path, init)
         return SocketMessageResponse(0, "ok")
 
-    async def cancel(self) -> SocketMessageResponse:
+    async def cancel(self, data) -> SocketMessageResponse:
+        default = "G91; G1 Z+100; G90"
+        after_cancel = default if "after" not in data else data["after"]
         log.info("cancelling print...")
         if not self.actualState["status"]["state"]['flags']['printing']:
             return SocketMessageResponse(1, "ucloud is not in an printing state")
 
         await self.octo_api.cancel()
-        await self.octo_api.post_command("G1 Z140")
+        if after_cancel:
+            log.info("executing after cancel...")
+            for cmd in after_cancel.split(";"):
+                log.info(cmd)
+                await self.octo_api.post_command(cmd)
         return SocketMessageResponse(0, "ok")
 
-    async def pause(self) -> SocketMessageResponse:
+    async def pause(self, data) -> SocketMessageResponse:
+        default = 'G91; G1 Z+20 F1000; G90; G1 X0 Y0'
+        after_pause = default if "after" not in data else data["after"]
         log.info("pausing print...")
         if not self.actualState["status"]["state"]['flags']['printing']:
             return SocketMessageResponse(1, "ucloud is not in an printing state")
 
         await self.octo_api.pause()
+        if after_pause:
+            log.info("executing after pause...")
+            for cmd in after_pause.split(";"):
+                log.info(cmd)
+                await self.octo_api.post_command(cmd)
         return SocketMessageResponse(0, "ok")
 
     async def resume(self) -> SocketMessageResponse:
@@ -223,7 +236,7 @@ class Printer(PrinterReceiver):
                 return await self.cancel()
 
             elif instruction == 'pause':
-                return await self.pause()
+                return await self.pause(data)
 
             elif instruction == 'resume':
                 return await self.resume()
