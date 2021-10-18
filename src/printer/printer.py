@@ -233,7 +233,7 @@ class Printer(PrinterReceiver):
                 return await self.print(data)
 
             elif instruction == 'cancel':
-                return await self.cancel()
+                return await self.cancel(data)
 
             elif instruction == 'pause':
                 return await self.pause(data)
