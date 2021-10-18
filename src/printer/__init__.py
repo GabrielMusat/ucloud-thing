@@ -12,9 +12,11 @@ class Printer(
     CancelListener,
     CommandListener,
     HomeListener,
+    PauseListener,
     PrintListener,
     ResumeListener,
     MoveListener,
+
     PrinterReceiver
 ):
     pass
