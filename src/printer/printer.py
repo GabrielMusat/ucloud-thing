@@ -142,7 +142,7 @@ class Printer(PrinterReceiver):
         return SocketMessageResponse(0, "ok")
 
     async def cancel(self, data) -> SocketMessageResponse:
-        default = "G91; G1 Z+100; G90"
+        default = "G91; G1 Z+200; G90"
         after_cancel = default if "after" not in data else data["after"]
         log.info("cancelling print...")
         if not self.actualState["status"]["state"]['flags']['printing']:
