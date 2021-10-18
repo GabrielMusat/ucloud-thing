@@ -6,7 +6,7 @@ import threading
 from pyargparse import PyArgs
 
 from printer import Printer, UcloudApi, OctoApi
-import ucloud_bluetooth
+import bluetooth
 
 
 class Args(PyArgs):
@@ -34,7 +34,7 @@ class Args(PyArgs):
 async def main(loop: asyncio.AbstractEventLoop):
     args = Args()
     if args.bluetooth:
-        threading.Thread(target=ucloud_bluetooth.main, args=(args.ucloud_id,)).start()
+        threading.Thread(target=bluetooth.main, args=(args.ucloud_id,)).start()
     init_logger(args.log_level)
     print(args)
     octoapi = OctoApi(args.octoprint_url, args.octoprint_config_path)
