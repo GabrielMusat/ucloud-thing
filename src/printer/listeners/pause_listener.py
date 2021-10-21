@@ -11,14 +11,14 @@ G91
 M83
 
 ; retract filament, move Z slightly upwards
-G1 Z+5 E-5 F4500
+G1 Z+15 E-5 F4500
 
 ; absolute XYZE
 M82
 G90
 
 ; move to a safe rest position, adjust as necessary
-G1 X0 Y0
+G1 X5 Y5
 {% endif %}
 '''
 
