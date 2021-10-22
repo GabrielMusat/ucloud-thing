@@ -73,7 +73,12 @@ class WifiCharacteristic(Characteristic):
         self.wifi_file = WifiFile()
 
     def ReadValue(self, options):
-        to_return = [x.__dict__() for x in self.wifi_file.parse()]
+        try:
+            parsed = self.wifi_file.parse()
+        except Exception as e:
+            log.error("error parsing wifi file: "+str(e))
+            raise e
+        to_return = [x.__dict__() for x in parsed]
         log.info(f'WifiCharacteristic Read: {to_return}')
         return str_2_dbus_bytes(json.dumps(to_return))
 
@@ -88,4 +93,8 @@ class WifiCharacteristic(Characteristic):
             assert "psk" in d, log.warning(f"entry {i+1} has no psk")
             new_value.append(WifiEntry(d["ssid"], d["psk"]))
 
-        self.wifi_file.update_wifi(new_value)
+        try:
+            self.wifi_file.update_wifi(new_value)
+        except Exception as e:
+            log.error("error writing wifi file: " + str(e))
+            raise e
