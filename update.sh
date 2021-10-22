@@ -15,12 +15,8 @@ git reset --hard
 git pull origin "$BRANCH"
 git checkout -f "$BRANCH"
 
-if [[ -f requirements.installed.txt && $(cat requirements.installed.txt) = $(cat requirements.txt) ]]; then
-  echo "nothing to update"
-else
-  source venv/bin/activate
-  pip install -r requirements.txt && cp requirements.txt requirements.installed.txt
-fi
+source venv/bin/activate
+pip install -r requirements.txt
 
 hciconfig hci0 piscan
 
