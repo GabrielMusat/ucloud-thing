@@ -3,6 +3,8 @@ import typing as T
 NOWHERE = 0
 IN_WIFI_ENTRY = 1
 
+DEFAULT_WIFI_FILE = "/boot/wpa_supplicant.txt"
+
 NETWORK_START = "network={"
 NETWORK_END = "}"
 SSID = "ssid"
@@ -19,7 +21,7 @@ class WifiEntry:
 
 
 class WifiFile:
-    def __init__(self, path: str = "/boot/wpa-supplicant.txt"):
+    def __init__(self, path: str = DEFAULT_WIFI_FILE):
         self._path = path
 
     def update_wifi(self, wifi_entries: T.List[WifiEntry]):
