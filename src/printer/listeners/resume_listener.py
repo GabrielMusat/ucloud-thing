@@ -48,6 +48,6 @@ class ResumeListener(PrinterListener):
         script_path = os.path.join(self.scripts_path, "beforePrintResumed")
         with open(script_path, "w") as f:
             f.write(before_resume)
-        os.chmod(before_resume, 777)
+        os.chmod(before_resume, 0o777)
         await self.octo_api.resume()
         return SocketMessageResponse(0, "ok")

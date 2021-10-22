@@ -53,7 +53,7 @@ class PrintListener(PrinterListener):
                     break
                 await f.write(chunk)
                 read += chunk_size
-        os.chmod(gcode, 777)
+        os.chmod(gcode, 0o777)
         log.info("file " + gcode + ' downloaded successfully, printing it...')
         self.actualState["download"]["file"] = None
         self.actualState["download"]["completion"] = -1
