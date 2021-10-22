@@ -3,7 +3,7 @@ import typing as T
 NOWHERE = 0
 IN_WIFI_ENTRY = 1
 
-DEFAULT_WIFI_FILE = "/boot/wpa_supplicant.txt"
+DEFAULT_WIFI_FILE = "/etc/wpa_supplicant/wpa_supplicant.conf"
 
 NETWORK_START = "network={"
 NETWORK_END = "}"
