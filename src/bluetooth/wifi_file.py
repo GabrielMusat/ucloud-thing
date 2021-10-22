@@ -19,7 +19,7 @@ class WifiEntry:
 
 
 class WifiFile:
-    def __init__(self, path: str = "/boot/octopi-wpa-supplicant.txt"):
+    def __init__(self, path: str = "/boot/wpa-supplicant.txt"):
         self._path = path
 
     def update_wifi(self, wifi_entries: T.List[WifiEntry]):
