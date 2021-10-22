@@ -32,12 +32,15 @@ class UcloudApi:
 
     async def exists(self, file: str, token: str) -> bool:
         url = self.url_backend + '/files/private/' + file
-        r: aiohttp.ClientResponse = await self.session.head(url, headers={"authorization": token})
-        return r.status == 200
+        async with aiohttp.ClientSession(headers={"authorization": token}) as session:
+            async with session.head(url) as r:
+                return r.status == 200
 
     async def download(self, file: str, token: str) -> aiohttp.ClientResponse:
         url = self.url_backend + '/files/private/' + file
-        return await self.session.get(url, headers={"authorization": token})
+        async with aiohttp.ClientSession(headers={"authorization": token}) as session:
+            async with session.get(url) as r:
+                yield r
 
     async def reconnect(self):
         self.socket = None

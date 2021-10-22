@@ -31,28 +31,28 @@ class PrintListener(PrinterListener):
     async def _download_file(self, file: str, token: str, gcode: str) -> None:
         self.actualState["download"]["file"] = file
         self.actualState["download"]["completion"] = 0.0
-        r = await self.ucloud_api.download(file, token)
-        existing_files = os.listdir(os.path.split(gcode)[0])
-        if len(existing_files) > 10:
-            log.warning("deleting files "+", ".join(existing_files))
-            for file in existing_files:
-                try:
-                    os.remove(file)
-                except Exception as e:
-                    log.error("error deleting file "+file+": "+str(e))
-        f = await aiofiles.open(gcode, mode='wb')
+        async with self.ucloud_api.download(file, token) as r:
+            existing_files = os.listdir(os.path.split(gcode)[0])
+            if len(existing_files) > 10:
+                log.warning("deleting files "+", ".join(existing_files))
+                for file in existing_files:
+                    try:
+                        os.remove(file)
+                    except Exception as e:
+                        log.error("error deleting file "+file+": "+str(e))
+            f = await aiofiles.open(gcode, mode='wb')
 
-        chunk_size = 1024
-        read = 0
-        while True:
-            if r.content_length:
-                self.actualState["download"]["file"] = file
-                self.actualState["download"]["completion"] = read / r.content_length
-            chunk = await r.content.read(chunk_size)
-            if not chunk:
-                break
-            await f.write(chunk)
-            read += chunk_size
+            chunk_size = 1024
+            read = 0
+            while True:
+                if r.content_length:
+                    self.actualState["download"]["file"] = file
+                    self.actualState["download"]["completion"] = read / r.content_length
+                chunk = await r.content.read(chunk_size)
+                if not chunk:
+                    break
+                await f.write(chunk)
+                read += chunk_size
         os.chmod(gcode, 777)
         log.info("file " + gcode + ' downloaded successfully, printing it...')
         self.actualState["download"]["file"] = None
