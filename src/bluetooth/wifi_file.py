@@ -3,7 +3,8 @@ import typing as T
 NOWHERE = 0
 IN_WIFI_ENTRY = 1
 
-DEFAULT_WIFI_FILE = "/etc/wpa_supplicant/wpa_supplicant.conf"
+WRITE_WIFI_FILE = "/boot/wpa_supplicant.conf"
+READ_WIFI_FILE = "/etc/wpa_supplicant/wpa_supplicant.conf"
 
 NETWORK_START = "network={"
 NETWORK_END = "}"
@@ -21,9 +22,6 @@ class WifiEntry:
 
 
 class WifiFile:
-    def __init__(self, path: str = DEFAULT_WIFI_FILE):
-        self._path = path
-
     def update_wifi(self, wifi_entries: T.List[WifiEntry]):
         new_file = ""
         for wifi in wifi_entries:
@@ -32,7 +30,7 @@ class WifiFile:
                         f'  {PSK}="{wifi.psk}"\n' \
                         f'{NETWORK_END}\n'
         state = NOWHERE
-        with open(self._path) as f:
+        with open(READ_WIFI_FILE) as f:
             for org_line in f.readlines():
                 line = org_line.strip()
                 if line == NETWORK_START:
@@ -43,7 +41,7 @@ class WifiFile:
                     continue
                 if state == NOWHERE:
                     new_file += org_line
-        with open(self._path, "w") as f:
+        with open(WRITE_WIFI_FILE, "w") as f:
             f.write(new_file)
 
     def parse(self) -> T.List[WifiEntry]:
@@ -51,7 +49,7 @@ class WifiFile:
         ssid = ""
         psk = ""
         new_wifi = []
-        with open(self._path) as f:
+        with open(READ_WIFI_FILE) as f:
             for line in f.readlines():
                 line = line.strip()
                 if line == NETWORK_START:
