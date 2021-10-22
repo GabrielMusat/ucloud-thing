@@ -1,5 +1,5 @@
 ucloud_id_path: /boot/ucloud-id.txt
-octoprint_url: http://localhost:5000/api
+octoprint_url: http://localhost:5000
 octoprint_config_path: /home/pi/.octoprint/config.yaml
 scripts_path: /home/pi/.octoprint/scripts/gcode
 file_upload_path: /home/pi/.octoprint/uploads
