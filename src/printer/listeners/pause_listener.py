@@ -39,6 +39,6 @@ class PauseListener(PrinterListener):
         script_path = os.path.join(self.scripts_path, "afterPrintPaused")
         with open(script_path, "w") as f:
             f.write(after_pause)
-        os.chmod(after_pause, 0o777)
+        os.chmod(script_path, 0o777)
         await self.octo_api.pause()
         return SocketMessageResponse(0, "ok")
