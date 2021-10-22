@@ -1,6 +1,7 @@
 import asyncio
 import json
 import typing as T
+from contextlib import asynccontextmanager
 
 import aiohttp
 import websockets
@@ -36,6 +37,7 @@ class UcloudApi:
             async with session.head(url, ssl=False) as r:
                 return r.status == 200
 
+    @asynccontextmanager
     async def download(self, file: str, token: str) -> aiohttp.ClientResponse:
         url = self.url_backend + '/files/private/' + file
         async with aiohttp.ClientSession(headers={"authorization": token}) as session:
