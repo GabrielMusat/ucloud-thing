@@ -18,6 +18,8 @@ class MoveListener(PrinterListener):
         for k in ['axis', 'distance']:
             if k not in data:
                 return SocketMessageResponse(1, k + " not specified")
+        if not self.position_known:
+            return SocketMessageResponse(1, "position unknown")
 
         speed = DEFAULT_SPEED if "speed" not in data else data["speed"]
         for cmd in ['G91', 'G1 {}{} F{}'.format(data['axis'], data['distance'], speed), 'G90']:
