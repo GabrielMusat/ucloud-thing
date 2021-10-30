@@ -17,7 +17,7 @@ class CommandListener(PrinterListener):
             log.warning("command not specified")
             return SocketMessageResponse(1, "command not specified")
         for cmd in data['command'].split(";"):
-            if "G1 " in cmd or "G0 " in cmd and not self.position_known:
+            if ("G1 " in cmd or "G0 " in cmd) and not self.position_known:
                 return SocketMessageResponse(1, "position unknown")
 
         for cmd in data['command'].split(";"):
