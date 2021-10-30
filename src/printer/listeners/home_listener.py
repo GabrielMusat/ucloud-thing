@@ -14,4 +14,5 @@ class HomeListener(PrinterListener):
     async def home(self, data) -> SocketMessageResponse:
         log.info("homing...")
         await self.octo_api.post_command("G28")
+        self.position_known = True
         return SocketMessageResponse(0, "ok")

@@ -33,6 +33,7 @@ class PrinterReceiver(ABC):
         self.transmit = False
         self.octo_api = octo_api
         self.ucloud_api = ucloud_api
+        self.position_known = False
 
         async def connect(*_, **__):
             log.info("socket connected, nice! :)")
@@ -83,9 +84,8 @@ class PrinterReceiver(ABC):
                     and "text" in self.actualState["status"]["state"]:
 
                 status = self.actualState["status"]["state"]["text"]
-
-            error = self.actualState["error"] if "error" in self.actualState else 0
-            if time.time() - last_connection_try > self.retry_timeout and (status == 'Closed' or error == 409):
+            error_code = self.actualState["error"] if "error" in self.actualState else 0
+            if time.time() - last_connection_try > self.retry_timeout and (status == 'Closed' or error_code == 409):
                 log.warning("closed status detected, forcing connection...")
                 last_connection_try = time.time()
                 try:
@@ -123,20 +123,24 @@ class PrinterReceiver(ABC):
             self.actualState["status"] = await self.octo_api.get_status()
             self.actualState["job"] = await self.octo_api.get_job()
             self.actualState["error"] = None
+            self.actualState["position"] = "known" if self.position_known else "unknown"
 
         except HttpException as e:
             self.actualState["status"] = {"state": {"text": "Disconnected"}}
             self.actualState["error"] = e.code
+            self.actualState["position"] = "unknown"
 
         except ClientConnectorError as e:
             log.error("error connecting to octoprint server: "+str(e))
             self.actualState["status"] = {"state": {"text": "Disconnected"}}
             self.actualState["error"] = 450
+            self.actualState["position"] = "unknown"
 
         except Exception as e:
             log.error("unknown error updating status: "+str(e))
             self.actualState["status"] = {"state": {"text": "Disconnected"}}
             self.actualState["error"] = 500
+            self.actualState["position"] = "unknown"
 
     async def sync(self):
         spec = diff_engine.diff(self.actualState, self.sentState)
