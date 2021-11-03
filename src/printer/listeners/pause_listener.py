@@ -18,7 +18,7 @@ M82
 G90
 
 ; move to a safe rest position, adjust as necessary
-G1 X5 Y5
+G1 X20 Y20
 {% endif %}
 '''
 
