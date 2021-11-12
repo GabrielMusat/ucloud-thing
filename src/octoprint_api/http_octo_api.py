@@ -4,9 +4,10 @@ import aiohttp
 import yaml
 
 from exceptions import HttpException
+from .octo_api import OctoApi
 
 
-class OctoApi:
+class HttpOctoApi(OctoApi):
     def __init__(self, url: str, config_path: str):
         self.config_path = config_path
         self.url = url

@@ -1,22 +1,25 @@
-from .printer_receiver import OctoApi, UcloudApi, PrinterReceiver
-from .listeners.cancel_listener import CancelListener
-from .listeners.command_listener import CommandListener
-from .listeners.home_listener import HomeListener
-from .listeners.pause_listener import PauseListener
-from .listeners.print_listener import PrintListener
-from .listeners.resume_listener import ResumeListener
-from .listeners.move_listener import MoveListener
+from abc import ABC
+
+from .printer import Printer as _Printer
+from .listeners.cancel_listener import CancelListenerMixin
+from .listeners.command_listener import CommandListenerMixin
+from .listeners.home_listener import HomeListenerMixin
+from .listeners.pause_listener import PauseListenerMixin
+from .listeners.print_listener import PrintListenerMixin
+from .listeners.resume_listener import ResumeListenerMixin
+from .listeners.move_listener import MoveListenerMixin
 
 
 class Printer(
-    CancelListener,
-    CommandListener,
-    HomeListener,
-    PauseListener,
-    PrintListener,
-    ResumeListener,
-    MoveListener,
+    CancelListenerMixin,
+    CommandListenerMixin,
+    HomeListenerMixin,
+    PauseListenerMixin,
+    PrintListenerMixin,
+    ResumeListenerMixin,
+    MoveListenerMixin,
 
-    PrinterReceiver
+    _Printer,
+    ABC
 ):
     pass

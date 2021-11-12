@@ -1,9 +1,10 @@
 import dbus
 
 import os
+
+from system import System, WifiEntry
 from .dbus_objects import Characteristic, Service
 import typing as T
-from .wifi_file import WifiEntry, WifiFile
 import log
 import json
 
@@ -19,7 +20,7 @@ def dbus_bytes_2_str(dbus_bytes: T.List[dbus.Byte]) -> str:
 class UcloudService(Service):
     UUID_SUFFIX = '12345678'
 
-    def __init__(self, ucloud_id: str, bus, index):
+    def __init__(self, system: System, ucloud_id: str, bus, index):
         if len(ucloud_id) != 24:
             raise ValueError("ucloud_id length must be 24")
         self.UUID = f"{ucloud_id[0:8]}-" \
@@ -33,14 +34,14 @@ class UcloudService(Service):
             self.UUID,
             True
         )
-        self.add_characteristic(RebootCharacteristic(bus, 0, self))
-        self.add_characteristic(WifiCharacteristic(bus, 1, self))
+        self.add_characteristic(RebootCharacteristic(system, bus, 0, self))
+        self.add_characteristic(WifiCharacteristic(system, bus, 1, self))
 
 
 class RebootCharacteristic(Characteristic):
     UUID = '12345678-1234-5678-1234-56789abcdef6'
 
-    def __init__(self, bus, index, service):
+    def __init__(self, system: System, bus, index, service):
         super().__init__(
             bus,
             index,
@@ -48,6 +49,7 @@ class RebootCharacteristic(Characteristic):
             ['read', 'write', 'writable-auxiliaries'],
             service
         )
+        self.system = system
 
     def WriteValue(self, value, options):
         log.info('RebootCharacteristic Write: ' + dbus_bytes_2_str(value))
@@ -62,7 +64,7 @@ class RebootCharacteristic(Characteristic):
 class WifiCharacteristic(Characteristic):
     UUID = '12345678-1234-5678-1234-56789abcdef5'
 
-    def __init__(self, bus, index, service):
+    def __init__(self, system: System, bus, index, service):
         super().__init__(
             bus,
             index,
@@ -70,11 +72,11 @@ class WifiCharacteristic(Characteristic):
             ['read', 'write', 'writable-auxiliaries'],
             service
         )
-        self.wifi_file = WifiFile()
+        self.system = system
 
     def ReadValue(self, options):
         try:
-            parsed = self.wifi_file.parse()
+            parsed = self.system.read_wifi()
         except Exception as e:
             log.error("error parsing wifi file: "+str(e))
             raise e
@@ -86,7 +88,7 @@ class WifiCharacteristic(Characteristic):
         log.info('WifiCharacteristic Write: ' + dbus_bytes_2_str(value))
         decoded = json.loads(dbus_bytes_2_str(value))
         assert type(decoded) == list, log.warning("received new value is not list")
-        new_value = []
+        new_value: T.List[WifiEntry] = []
         for i, d in enumerate(decoded):
             assert type(d) == dict, log.warning(f"entry {i+1} is not dict")
             assert "ssid" in d, log.warning(f"entry {i+1} has no ssid")
@@ -94,7 +96,7 @@ class WifiCharacteristic(Characteristic):
             new_value.append(WifiEntry(d["ssid"], d["psk"]))
 
         try:
-            self.wifi_file.update_wifi(new_value)
+            self.system.write_wifi(new_value)
         except Exception as e:
             log.error("error writing wifi file: " + str(e))
             raise e

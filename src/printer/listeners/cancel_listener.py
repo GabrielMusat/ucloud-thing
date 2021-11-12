@@ -1,19 +1,21 @@
-from ackWebsockets import SocketMessageResponse
-from .listener import PrinterListener, InstructionListener
+import typing as T
+from abc import ABC
+
 import log
+from .listener import PrinterListener, InstructionListener
 
 DEFAULT_AFTER_CANCEL = "G91; G1 Z+200; G90"
 
 
-class CancelListener(PrinterListener):
+class CancelListenerMixin(PrinterListener, ABC):
     def __init__(self, *args, **kwargs):
-        super(CancelListener, self).__init__(*args, **kwargs)
+        super(CancelListenerMixin, self).__init__(*args, **kwargs)
         self.instruction_listeners["cancel"] = InstructionListener(
             ["Printing"],
             self.cancel
         )
 
-    async def cancel(self, data) -> SocketMessageResponse:
+    async def cancel(self, data: dict) -> T.Tuple[int, str]:
         after_cancel = DEFAULT_AFTER_CANCEL if "after" not in data else data["after"]
         log.info("cancelling print...")
 
@@ -23,4 +25,4 @@ class CancelListener(PrinterListener):
             for cmd in after_cancel.split(";"):
                 log.info(cmd)
                 await self.octo_api.post_command(cmd)
-        return SocketMessageResponse(0, "ok")
+        return 0, "ok"
