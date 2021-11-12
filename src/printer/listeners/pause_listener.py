@@ -1,8 +1,9 @@
 import os
+import typing as T
+from abc import ABC
 
-from ackWebsockets import SocketMessageResponse
-from .listener import PrinterListener, InstructionListener
 import log
+from .listener import PrinterListener, InstructionListener
 
 DEFAULT_AFTER_PAUSE_SCRIPT = '''
 {% if pause_position.x is not none %}
@@ -23,15 +24,15 @@ G1 X20 Y20
 '''
 
 
-class PauseListener(PrinterListener):
+class PauseListenerMixin(PrinterListener, ABC):
     def __init__(self, *args, **kwargs):
-        super(PauseListener, self).__init__(*args, **kwargs)
+        super(PauseListenerMixin, self).__init__(*args, **kwargs)
         self.instruction_listeners["pause"] = InstructionListener(
             ["Printing"],
             self.pause
         )
 
-    async def pause(self, data) -> SocketMessageResponse:
+    async def pause(self, data) -> T.Tuple[int, str]:
         after_pause = DEFAULT_AFTER_PAUSE_SCRIPT if "after" not in data else data["after"]
         log.info("pausing print...")
         if not os.path.isdir(self.scripts_path):
@@ -41,4 +42,4 @@ class PauseListener(PrinterListener):
             f.write(after_pause)
         os.chmod(script_path, 0o777)
         await self.octo_api.pause()
-        return SocketMessageResponse(0, "ok")
+        return 0, "ok"
