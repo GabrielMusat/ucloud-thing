@@ -1,7 +1,7 @@
 import json
 from abc import ABC
 
-from exceptions import HttpException
+from octoprint_api import HttpException
 from typing import Dict, Union, List, Awaitable, Callable, Any, Tuple
 import log
 from ..printer import Printer

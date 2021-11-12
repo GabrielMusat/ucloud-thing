@@ -11,8 +11,7 @@ from aiohttp.client_exceptions import ClientConnectorError
 from ucloud_socket import UcloudSocket
 from .diff_engine import diffengine
 import log
-from exceptions import HttpException
-from octoprint_api import OctoApi
+from octoprint_api import OctoApi, HttpException
 from file_downloader import FileDownloader
 
 

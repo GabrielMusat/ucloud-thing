@@ -1,16 +1,16 @@
 import asyncio
-import typing as T
-from log.logger import _get as init_logger
 import threading
+import typing as T
 
 from pyargparse import PyArgs
 
+from system import LinuxSystem
+from bluetooth import UcloudBleApp
+from file_downloader import UcloudBackendFileDownloader
+from log import init_logger
+from octoprint_api import HttpOctoApi
 from printer import Printer
 from ucloud_socket import AckWsUcloudSocket
-from octoprint_api import HttpOctoApi
-from file_downloader import UcloudBackendFileDownloader
-import bluetooth
-import system
 
 
 class Args(PyArgs):
@@ -42,10 +42,12 @@ class UcloudPrinter(Printer, AckWsUcloudSocket):
 
 async def main(loop: asyncio.AbstractEventLoop):
     args = Args()
-    if args.bluetooth:
-        threading.Thread(target=bluetooth.main, args=(args.ucloud_id, system.LinuxSystem())).start()
     init_logger(args.log_level)
     print(args)
+    if args.bluetooth:
+        ucloud_ble = UcloudBleApp(args.ucloud_id, LinuxSystem())
+        threading.Thread(target=ucloud_ble.run).start()
+
     printer = UcloudPrinter(
         url_socket=args.socket_url,
         ucloud_id=args.ucloud_id,

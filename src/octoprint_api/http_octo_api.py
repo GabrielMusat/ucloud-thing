@@ -3,7 +3,7 @@ import json
 import aiohttp
 import yaml
 
-from exceptions import HttpException
+from .exceptions import HttpException
 from .octo_api import OctoApi
 
 
