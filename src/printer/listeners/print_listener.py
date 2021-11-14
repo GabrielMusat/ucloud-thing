@@ -33,12 +33,13 @@ class PrintListenerMixin(PrinterListener, ABC):
         self.actualState["download"]["completion"] = 0.0
         self.file_downloader.set_auth(token)
         async with self.file_downloader.download(file) as r:
-            existing_files = os.listdir(os.path.split(gcode)[0])
+            base_path = os.path.split(gcode)[0]
+            existing_files = os.listdir(base_path)
             if len(existing_files) > 10:
                 log.warning("deleting files "+", ".join(existing_files))
                 for file in existing_files:
                     try:
-                        os.remove(file)
+                        os.remove(os.path.join(base_path, file))
                     except Exception as e:
                         log.error("error deleting file "+file+": "+str(e))
             f = await aiofiles.open(gcode, mode='wb')
