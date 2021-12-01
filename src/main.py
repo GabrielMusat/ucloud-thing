@@ -21,7 +21,7 @@ class Args(PyArgs):
     file_upload_path: str
     scripts_path: str
     socket_url: str
-    backend_url: str
+    files_url: str
     retry_timeout: int = 20
     ping_timeout: int = 10
     log_level: str = "INFO"
@@ -52,7 +52,7 @@ async def main(loop: asyncio.AbstractEventLoop):
         url_socket=args.socket_url,
         ucloud_id=args.ucloud_id,
         octo_api=HttpOctoApi(args.octoprint_url, args.octoprint_config_path),
-        file_downloader=UcloudBackendFileDownloader(args.backend_url),
+        file_downloader=UcloudBackendFileDownloader(args.files_url),
         upload_path=args.file_upload_path,
         scripts_path=args.scripts_path,
         retry_timeout=args.retry_timeout,

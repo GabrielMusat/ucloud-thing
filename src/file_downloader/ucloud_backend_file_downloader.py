@@ -14,14 +14,14 @@ class UcloudBackendFileDownloader(FileDownloader):
         self.token = auth
 
     async def exists(self, file: str) -> bool:
-        url = self.url + '/files/private/' + file
+        url = self.url + '/' + file
         async with aiohttp.ClientSession(headers={"authorization": self.token}) as session:
             async with session.head(url, ssl=False) as r:
                 return r.status == 200
 
     @asynccontextmanager
     async def download(self, file: str) -> aiohttp.ClientResponse:
-        url = self.url + '/files/private/' + file
+        url = self.url + '/' + file
         async with aiohttp.ClientSession(headers={"authorization": self.token}) as session:
             async with session.get(url, ssl=False) as r:
                 yield r

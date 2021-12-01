@@ -4,4 +4,4 @@ octoprint_config_path: /home/pi/.octoprint/config.yaml
 scripts_path: /home/pi/.octoprint/scripts/gcode
 file_upload_path: /home/pi/.octoprint/uploads
 socket_url: wss://web.ucloud3d.com/ws
-backend_url: https://web.ucloud3d.com/api
+files_url: https://web.ucloud3d.com/files/private
