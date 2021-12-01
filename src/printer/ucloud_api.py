@@ -14,9 +14,9 @@ INSTRUCTION = "instruction"
 
 
 class UcloudApi:
-    def __init__(self, url_socket: str, url_backend: str, ucloud_id: str):
+    def __init__(self, url_socket: str, url_files: str, ucloud_id: str):
         self.url_socket: str = url_socket
-        self.url_backend: str = url_backend
+        self.url_files: str = url_files
         self.ucloud_id: str = ucloud_id
         self.socket: T.Union[None, ackWebsockets.Socket] = None
         self.session = aiohttp.ClientSession(headers={"ucloud-id": self.ucloud_id})
@@ -31,12 +31,12 @@ class UcloudApi:
         self.on_instruction: T.Callable[[str], T.Awaitable[ackWebsockets.SocketMessageResponse]] = dummy
 
     async def exists(self, file: str, token: str) -> bool:
-        url = self.url_backend + '/files/private/' + file
+        url = self.url_files + '/' + file
         r: aiohttp.ClientResponse = await self.session.head(url, headers={"authorization": token})
         return r.status == 200
 
     async def download(self, file: str, token: str) -> aiohttp.ClientResponse:
-        url = self.url_backend + '/files/private/' + file
+        url = self.url_files + '/' + file
         return await self.session.get(url, headers={"authorization": token})
 
     async def reconnect(self):
