@@ -1,6 +1,8 @@
 import os
 
-from ackWebsockets import SocketMessageResponse
+import typing as T
+from abc import ABC
+
 from .listener import PrinterListener, InstructionListener
 import log
 
@@ -32,15 +34,15 @@ G1 X{{ pause_position.x }} Y{{ pause_position.y }} Z{{ pause_position.z }} F4500
 '''
 
 
-class ResumeListener(PrinterListener):
+class ResumeListenerMixin(PrinterListener, ABC):
     def __init__(self, *args, **kwargs):
-        super(ResumeListener, self).__init__(*args, **kwargs)
+        super(ResumeListenerMixin, self).__init__(*args, **kwargs)
         self.instruction_listeners["resume"] = InstructionListener(
             ["Paused"],
             self.resume
         )
 
-    async def resume(self, data) -> SocketMessageResponse:
+    async def resume(self, data) -> T.Tuple[int, str]:
         before_resume = DEFAULT_BEFORE_RESUME_SCRIPT if "before" not in data else data["before"]
         log.info("resuming print...")
         if not os.path.isdir(self.scripts_path):
@@ -48,5 +50,6 @@ class ResumeListener(PrinterListener):
         script_path = os.path.join(self.scripts_path, "beforePrintResumed")
         with open(script_path, "w") as f:
             f.write(before_resume)
+        os.chmod(script_path, 0o777)
         await self.octo_api.resume()
-        return SocketMessageResponse(0, "ok")
+        return 0, "ok"

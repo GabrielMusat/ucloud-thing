@@ -1,12 +1,16 @@
 import asyncio
-import typing as T
-from log.logger import _get as init_logger
 import threading
+import typing as T
 
 from pyargparse import PyArgs
 
-from printer import Printer, UcloudApi, OctoApi
-import bluetooth
+from system import LinuxSystem
+from bluetooth import UcloudBleApp
+from file_downloader import UcloudBackendFileDownloader
+from log import init_logger
+from octoprint_api import HttpOctoApi
+from printer import Printer
+from ucloud_socket import AckWsUcloudSocket
 
 
 class Args(PyArgs):
@@ -18,6 +22,7 @@ class Args(PyArgs):
     scripts_path: str
     socket_url: str
     files_url: str
+    retry_timeout: int = 20
     ping_timeout: int = 10
     log_level: str = "INFO"
     bluetooth: bool = True
@@ -31,16 +36,29 @@ class Args(PyArgs):
                 self.ucloud_id = f.read().strip()
 
 
+class UcloudPrinter(Printer, AckWsUcloudSocket):
+    pass
+
+
 async def main(loop: asyncio.AbstractEventLoop):
     args = Args()
-    if args.bluetooth:
-        threading.Thread(target=bluetooth.main, args=(args.ucloud_id,)).start()
     init_logger(args.log_level)
     print(args)
-    octoapi = OctoApi(args.octoprint_url, args.octoprint_config_path)
-    ulabapi = UcloudApi(args.socket_url, args.files_url, args.ucloud_id)
-    printer = Printer(octoapi, ulabapi, args.file_upload_path, args.scripts_path, args.ping_timeout)
-    await printer.ucloud_api.connect(loop)
+    if args.bluetooth:
+        ucloud_ble = UcloudBleApp(args.ucloud_id, LinuxSystem())
+        threading.Thread(target=ucloud_ble.run).start()
+
+    printer = UcloudPrinter(
+        url_socket=args.socket_url,
+        ucloud_id=args.ucloud_id,
+        octo_api=HttpOctoApi(args.octoprint_url, args.octoprint_config_path),
+        file_downloader=UcloudBackendFileDownloader(args.files_url),
+        upload_path=args.file_upload_path,
+        scripts_path=args.scripts_path,
+        retry_timeout=args.retry_timeout,
+        ping_timeout=args.ping_timeout
+    )
+    await printer.start(loop)
     await printer.loop()
 
 if __name__ == '__main__':
