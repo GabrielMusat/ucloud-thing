@@ -20,7 +20,7 @@ class CommandListenerMixin(PrinterListener, ABC):
             return 1, "command not specified"
         command: str = data['command']
         for cmd in command.split(";"):
-            if ("G1 " in cmd or "G0 " in cmd) and not self.position_known:
+            if ("G1 " in cmd or "G0 " in cmd) and ("X" in cmd or "Y" in cmd or "Z" in cmd) and not self.position_known:
                 return 1, "position unknown"
 
         for cmd in command.split(";"):
